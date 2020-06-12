@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Peter Smith" />
+
+<meta name="date" content="2020-05-13" />
+
+<title>Convolutional Neural Nets - Case Studies</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/darkly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Convolutional Neural Nets - Case Studies</h1>
+<h4 class="author">Peter Smith</h4>
+<h4 class="date">13 May 2020</h4>
+
+</div>
+
+
+<p>Looking at case studies can be a good way to gain intuition about how to build Conv-nets. An architecture that works well on 1 task can often wor well on other tasks as well.</p>
+<div id="classic-networks" class="section level1">
+<h1>Classic Networks</h1>
+<div id="lenet-5" class="section level2">
+<h2>LeNet-5</h2>
+<ul>
+<li>From 1998</li>
+<li>Goal: Recognise Handwritten Grayscale images (ie MNIST dataset)</li>
+<li>Was built in 1998 so it uses Average-pooling. These days we’d use Max-pooling.</li>
+<li>No padding was used - wasn’t common at the time.</li>
+<li>60 000 parameters used - relatively small to what we’d use in modern day networks.</li>
+<li>At the time ReLU wasn’t common - so sigmoid activation functions were used.</li>
+</ul>
+<p><strong>Full Architecture of the network</strong>:</p>
+<div class="figure">
+<img src="Images/LeNet5.PNG" alt="LeNet-5 visualised" />
+<p class="caption">LeNet-5 visualised</p>
+</div>
+<ol start="0" style="list-style-type: decimal">
+<li>Starts with <span class="math inline">\(32 \times 32 \times 1\)</span> Grayscale image</li>
+<li><strong>Apply a convolution with filter-size = 5, n-channels = 6 and stride = 1</strong>. The representation is now <span class="math inline">\(28 \times 28 \times 6\)</span>.</li>
+<li><strong>Apply Average-pooling with filter_size = 2 and stride = 2</strong>. Object size is now <span class="math inline">\(14 \times 14 \times 6\)</span></li>
+<li><strong>Apply a convolution with filter-size = 5, n-channels = 16 and stride = 1</strong>. The representation is now <span class="math inline">\(10 \times 10 \times 16\)</span>.</li>
+<li><strong>Apply Average-pooling with filter_size = 2 and stride = 2</strong>. Object size is now <span class="math inline">\(5 \times 5 \times 16\)</span>.</li>
+<li><strong>Apply a fully-connected layer with 120 Neurons</strong>.</li>
+<li><strong>Apply a fully-connected layer with 84 Neurons</strong>.</li>
+<li><strong>Apply a softmax layer with 10 Neurons</strong>. (It was done slightly differently in the paper, but this is what we’d use in modern days).</li>
+</ol>
+<p>Parameter Count by layer:</p>
+<ol start="0" style="list-style-type: decimal">
+<li>0</li>
+<li>CNN Layer 1: <span class="math inline">\(5 \times 5 \times 6= 150\)</span></li>
+<li>Pooling Layer 1: 0</li>
+<li>CNN Layer 2: <span class="math inline">\(5 \times 5 \times 16= 400\)</span></li>
+<li>Pooling Layer 2: 0</li>
+<li>Dense Layer 1: <span class="math inline">\(400 \times 120 = 48 000\)</span></li>
+<li>Dense Layer 2: <span class="math inline">\(120 \times 84 = 10 080\)</span></li>
+<li>Softmax Layer: <span class="math inline">\(120 \times 10 = 1 200\)</span></li>
+</ol>
+<p>Total count: 59 830. Note how most of the parameters are used by the fully connected layers.</p>
+</div>
+<div id="alexnet" class="section level2">
+<h2>AlexNet</h2>
+<div class="figure">
+<img src="Images/AlexNet.PNG" alt="AlexNet visualised" />
+<p class="caption">AlexNet visualised</p>
+</div>
+<ul>
+<li>From 2012</li>
+<li>56 million parameters</li>
+<li>Convolutional layers are same-filters (so with zero-padding).</li>
+</ul>
+<p><strong>Full Architecture of Network</strong>:</p>
+<p>For convenience, I summarise each row as follows:</p>
+<p>CNN (filter-width, stride, n-filters), then Max-Pooling (filter-width, stride), then Object dimension after pooling: (width, height, channels)</p>
+<ol start="0" style="list-style-type: decimal">
+<li>Image representation: (227,227,3)</li>
+<li>(11, 4, 96), (3,2),(27,27,96)</li>
+<li>(5,1, 256), (3,2), (13,13,256)</li>
+<li>(3,1, 384), no pooling, (13,13,384)</li>
+<li>(3,1, 384), no pooling, (13,13,384)</li>
+<li>(3,1, 256), (3,2), (13,13,256)</li>
+<li>Unroll, (9216,1)</li>
+<li>Dense-Layer 1, (4096)</li>
+<li>Dense-Layer 2, (4096)</li>
+<li>Softmax layer with 1000 nodes (this would be based on the classification task at hand)</li>
+</ol>
+<p>Number of Parameters: 1. <span class="math inline">\(11 \times 11 \times 96 = 11616\)</span> 2. <span class="math inline">\(5 \times 5 \times 256 = 6400\)</span> 3. <span class="math inline">\(3 \times 3 \times 384 = 3456\)</span> 4. <span class="math inline">\(3 \times 3 \times 384 = 3456\)</span> 5. <span class="math inline">\(3 \times 3 \times 256 = 2304\)</span> 6. 0 7. <span class="math inline">\(9216 \times 4096 = 37 748 736\)</span> 8. <span class="math inline">\(4096 \times 4096 = 16 777 216\)</span> 9. <span class="math inline">\(4096 \times 1000 = 4 096 000\)</span></p>
+<p>Total Count: 58 649 184 parameters.</p>
+</div>
+<div id="vgg---16-network" class="section level2">
+<h2>VGG - 16 Network</h2>
+<div class="figure">
+<img src="Images/VGG16.PNG" alt="VGG - 16 visualised" />
+<p class="caption">VGG - 16 visualised</p>
+</div>
+<ul>
+<li>2015</li>
+<li>Simpler network design.</li>
+<li>All conv-layers are <span class="math inline">\(3 \times 3\)</span> with stride = 1, same</li>
+<li>All Max-pooling layers are <span class="math inline">\(2 \times 2\)</span> with stride = 2</li>
+<li>The number of channels in each conv-layer tends to double</li>
+<li>138 million parameters</li>
+</ul>
+<p><strong>Full Architecture: </strong></p>
+<ol start="0" style="list-style-type: decimal">
+<li>Image representation: <span class="math inline">\(224 \times 224 \times 3\)</span></li>
+<li>2x conv-layers of with 64 channels each</li>
+<li>pooling</li>
+<li>2x conv-layers of with 128 channels each</li>
+<li>pooling</li>
+<li>3x conv-layers of with 256 channels each</li>
+<li>pooling</li>
+<li>3x conv-layers of with 512 channels each</li>
+<li>pooling</li>
+<li>3x conv-layers of with 512 channels each</li>
+<li>pooling</li>
+<li>Dense-Layer</li>
+<li>Dense Layer</li>
+<li>Softmax 1000</li>
+</ol>
+</div>
+</div>
+<div id="resnets" class="section level1">
+<h1>ResNets</h1>
+<div id="residual-blocks" class="section level2">
+<h2>Residual Blocks</h2>
+<div class="figure">
+<img src="Images/Residual_Blocks.PNG" alt="5 Residual blocks - The activations are passed directly forward, skipping a layer" />
+<p class="caption">5 Residual blocks - The activations are passed directly forward, “skipping” a layer</p>
+</div>
+<p>in a residual block, <span class="math inline">\(a^{[l+2]} = g(z^{[l+2]} + a^{[l]})\)</span> for every even <span class="math inline">\(l\)</span>. Empirically, with a plain feed-forward network, adding layers to a network eventually has a negative effect on your model’s accuracy on the training set. However, with residual blocks, adding layers gives a consistently decreasing training error on the training set. So having residual blocks allows you to train much deeper networks (hundreds of layers).</p>
+</div>
+<div id="why-do-resnets-work-well" class="section level2">
+<h2>Why do ResNets work well?</h2>
+<div class="figure">
+<img src="Images/Residual_Block_intuition.PNG" alt="A large network with layer l being very deep in" />
+<p class="caption">A large network with layer <em>l</em> being very deep in</p>
+</div>
+<p><strong>It makes the Identity Function easy to learn!</strong></p>
+<p>Consider the case where you have a very large Neural Network of residual blocks as in the image above leading to a layers <span class="math inline">\(l\)</span> and <span class="math inline">\(l+2\)</span>. imagine there is large weight decay, leading to tiny values of <span class="math inline">\(w^{[l+2]}\)</span> and <span class="math inline">\(b^{[l+2]}\)</span>. Then,</p>
+<p><span class="math display">\[
+\begin{array} {rcl}
+a^{[l+2]} &amp;=&amp; g(z^{[l+2]} + a^{[l]}) \\
+&amp;=&amp; g(w^{[l+2]} a^{[l+1]} + b^{[l+2]} + a^{[l]}) \\
+&amp;\approx&amp; g(a^{[l]}) \\
+&amp;\approx&amp; a^{[l]}. \\
+\end{array}
+\]</span></p>
+<p>The result above gives us the result that if gradients are vanishing, a layer will simply become an identity layer. This means adding 2 layers gives a network with the performance of a large network will be <em>at least as good as a smaller network of the same architecture</em>. This lets us add on layers without fear of worse performance on the training set. In highly parameterised plain networks, it becomes difficult to find parameters that learn the identity network.</p>
+</div>
+<div id="what-if-the-dimension-of-al2-and-al-dont-match" class="section level2">
+<h2>What if the dimension of <span class="math inline">\(a^{[l+2]}\)</span> and <span class="math inline">\(a^{[l]}\)</span> don’t match?</h2>
+<p>Say <span class="math inline">\(a^{[l+2]}\)</span> has 256 nodes and <span class="math inline">\(a^{[l]}\)</span> only has 128. Then we define <span class="math inline">\(a^{[l+2]} = g(z^{[l+2]} + w_s a^{[l]})\)</span> where <span class="math inline">\(w_s \in \mathbb{R}^{256 \times 128}\)</span>. This fixes the dimensions. As for <span class="math inline">\(w_s\)</span>, we can set it as a learnable parameter or hard-code it to implement zero-padding so that the extra nodes are just set to zero. No guideline is given as to which is better, but I like the elegance of zero-padding, but I guess it doesn’t work if the second layer is smaller in size.</p>
+</div>
+<div id="resnets-on-images." class="section level2">
+<h2>ResNets on images.</h2>
+<div class="figure">
+<img src="Images/ResNet_for_Images.PNG" alt="Example ResNet for images. Note its a bunch of convolutional layers with an occasional pooling layer." />
+<p class="caption">Example ResNet for images. Note its a bunch of convolutional layers with an occasional pooling layer.</p>
+</div>
+<ul>
+<li>From 2015</li>
+<li>Uses same convolutions, so layers are always the same dimension (until pooling)</li>
+<li>Follows a bunch of identical convolutions, then pools, then repeats.</li>
+</ul>
+</div>
+</div>
+<div id="inception-network" class="section level1">
+<h1>Inception Network</h1>
+<p>Consists of a series of Inception Layers. We will first describe a <span class="math inline">\(1 \times 1\)</span> convolution, then go on to describe Inception Layers</p>
+<div id="times-1-convolutions-network-in-network" class="section level2">
+<h2><span class="math inline">\(1 \times 1\)</span> Convolutions (Network in Network)</h2>
+<div class="figure">
+<img src="Images/1by1_filter.PNG" alt="1 \times 1 Convolutional layer" />
+<p class="caption"><span class="math inline">\(1 \times 1\)</span> Convolutional layer</p>
+</div>
+<p>From 2013. Although confusingly named, this type of layer basically reduces the number of channels of a layer while keeping the dimensions of each channel the same. Also remember, that even if we kept the dimensions the same, using a conv-layer has an activation function (typically ReLU), so we would still be adding some sort of nonlinearity to the network.</p>
+</div>
+<div id="inception-layer" class="section level2">
+<h2>Inception Layer</h2>
+<div class="figure">
+<img src="Images/Inception_Layer_Example_2.PNG" alt="Inception-layer - note 1-by-1 conv used for dimension reduction. Also note for Pooling layer, the 1-by-1 conv is implemented afterwards" />
+<p class="caption">Inception-layer - note 1-by-1 conv used for dimension reduction. Also note for Pooling layer, the 1-by-1 conv is implemented afterwards</p>
+</div>
+<ul>
+<li>From 2014</li>
+<li>The idea is to not have to worry about choosing between filter hyperparameters. Just use them all!</li>
+<li>Leads to enormous calculation cost - not parameters, just the sheer number of multiplications needing to be done</li>
+<li>As a result of the above, 1-by-1 convolutions are used as a dimensionality-reduction step, often reducing the calculation burden 10-fold.</li>
+</ul>
+<div class="figure">
+<img src="Images/Inception_Network_Example.PNG" alt="Inception-Network - Consists of a bunch of inception layers." />
+<p class="caption">Inception-Network - Consists of a bunch of inception layers.</p>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Peter Smith" />
+
+<meta name="date" content="2020-05-13" />
+
+<title>Convolutional Neural Nets</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/darkly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Convolutional Neural Nets</h1>
+<h4 class="author">Peter Smith</h4>
+<h4 class="date">13 May 2020</h4>
+
+</div>
+
+
+<pre class="r"><code>library(hwriter)
+library(knitr)
+library(dplyr)
+library(kableExtra)</code></pre>
+<div id="convolutions-explained-using-edge-detection" class="section level2">
+<h2>Convolutions explained using edge-detection</h2>
+<p>A convolution is a mathematical operation on two functions that productes a third function expressing how the shape of one is modified by the other. Similar to my honours project, a convolution on an image is created by applying some <em>kernel</em>, or synonymously <em>filter</em>, to every spot on a matrix to produce some resultant matrix</p>
+<div class="figure">
+<img src="Images/Convolution_Example_Vertical_edge.PNG" alt="Example convolution for detecting vertical edges" />
+<p class="caption">Example convolution for detecting vertical edges</p>
+</div>
+<p>So a vertical edge detector filter may involve a kernel</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+1&amp; 0 &amp; -1\\ 
+1&amp; 0 &amp; -1\\
+1&amp; 0 &amp; -1\\
+\end{pmatrix}.
+\]</span> However is this the best kernel for a vertical edge detector? Alternatives recommended in literature are the Sobel and Scharr filters given by</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+1&amp; 0 &amp; -1\\ 
+2&amp; 0 &amp; -2\\
+1&amp; 0 &amp; -1\\
+\end{pmatrix}\text{ and }
+\begin{pmatrix}
+3&amp; 0 &amp; -3\\ 
+10&amp; 0 &amp; -10\\
+3&amp; 0 &amp; -3\\
+\end{pmatrix}\text{respectively.}
+\]</span></p>
+<p>The idea behind Convolutional Neural Nets is to treat these weights as learnable parameters - so to define the kernel as</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+w_1&amp; w_2 &amp; w_3\\ 
+w_4&amp; w_5 &amp; w_6\\
+w_7&amp; w_8 &amp; w_9\\
+\end{pmatrix}.
+\]</span></p>
+<p>Then backpropogation can learn the best filters to solve the problem at hand.</p>
+<p><strong>Technical Note:</strong> In mathematics, what we describe above is referred to as <em>cross-correlation</em>. A convolution would require the kernal to first be mirrored on both axes before being applied to the image. However, machine learning works with the convention that a convolution skips this step.</p>
+</div>
+<div id="padding" class="section level2">
+<h2>Padding</h2>
+<p>Convolutions typically have issues at the edge of images - forcing you to reduce the size of the result of the convolution. Padding just means that you surround your image with zeroes so that you can apply the convolution to every pixel.</p>
+<p>Terminology:</p>
+<ul>
+<li>Valid convolution: don’t use any padding, the result of your convolution is smaller than your original image</li>
+<li>Same convolution: Pad the input so that the output is the same size as the original input.</li>
+</ul>
+<p>Convolution-filter sizes are typically odd, since then the calculation for how many pixels to pad with for same-convolutions is simple.</p>
+</div>
+<div id="strided-convolutions" class="section level2">
+<h2>Strided convolutions</h2>
+<p>Instead of applying the convolution to every single pixel, you can apply it to every second pixel, or every third pixel.</p>
+<p>Calculation:</p>
+<p>if you have</p>
+<ul>
+<li>An <span class="math inline">\(n \times n\)</span> image,</li>
+<li>an <span class="math inline">\(f \times f\)</span> filter,</li>
+<li>using padding <span class="math inline">\(p\)</span> and</li>
+<li>stride-length <span class="math inline">\(s\)</span>,</li>
+</ul>
+<p>then the output size of each dimension is given by <span class="math inline">\(\frac{n+2p-f}{s}+1\)</span>.</p>
+</div>
+<div id="convolutions-over-volume-3-dimensional-images" class="section level2">
+<h2>Convolutions over volume (3-dimensional images)</h2>
+<div class="figure">
+<img src="Images/3D-CNN2.PNG" alt="Convolution over a 6x6 RGB image. Note the result does not have a third dimension." />
+<p class="caption">Convolution over a 6x6 RGB image. Note the result does not have a third dimension.</p>
+</div>
+<p>So, applying a single convolution to an image returns a <span class="math inline">\(k\times k \times 1\)</span> image for some k. But if we apply say <span class="math inline">\(n_c\)</span> different convolutions to an image, we can stack these convolutions on top of each other to create a <span class="math inline">\(k \times k \times n_c\)</span> object or <em>volume</em>. The last dimension of the volume is referred to as the <em>depth</em> (Somewhat confusingly) or the number of channels of the volume.</p>
+</div>
+<div id="one-layer-of-a-convolutional-network" class="section level2">
+<h2>One Layer of a Convolutional Network</h2>
+<div class="figure">
+<img src="Images/CNN-Example-of_a_layer.PNG" alt="From https://www.coursera.org/learn/convolutional-neural-networks/lecture/nsiuW/one-layer-of-a-convolutional-network" />
+<p class="caption">From <a href="https://www.coursera.org/learn/convolutional-neural-networks/lecture/nsiuW/one-layer-of-a-convolutional-network" class="uri">https://www.coursera.org/learn/convolutional-neural-networks/lecture/nsiuW/one-layer-of-a-convolutional-network</a></p>
+</div>
+<p>Note how similar the setup is to a normal Feed-Forward Neural Network. A single Neuron in a CNN consists of some activation function of a convolution plus a bias term.</p>
+<p>Say a single layer of your CNN consists of 10 filters of size <span class="math inline">\(3\times 3 \times 3\)</span>. How many parameters would you have?</p>
+<ul>
+<li>Each convolution consists of <span class="math inline">\(3 \cdot 3 \cdot 3 = 27\)</span> weights</li>
+<li>Each convolutional network has it’s own bias term</li>
+<li>Therefore the total number of weights in this layer is <span class="math inline">\((27 +1 ) \cdot 10 = 280\)</span> parameters.</li>
+<li>Note the number of parameters is independent of the size of the previous layer. So the number of parameters to be estimated is not related to the number of pixels in the image.</li>
+</ul>
+</div>
+<div id="summary-of-notation" class="section level2">
+<h2>Summary of notation</h2>
+<p>If layer <em>l</em> is a convolution layer:</p>
+<ul>
+<li><span class="math inline">\(f^{[l]}\)</span> = filter size. Note the number of channels in the filter should match the number of channels of the input, so <span class="math inline">\(f^{[l]} \times f^{[l]} \times n_c^{[l-1]}\)</span>.</li>
+<li><span class="math inline">\(p^{[l]}\)</span> = padding size</li>
+<li><span class="math inline">\(s^{[l]}\)</span> = stride size</li>
+<li><span class="math inline">\(n_c^{[l]}\)</span> = number of filters</li>
+<li>Input = <span class="math inline">\(n_H^{[l-1]} \times n_W^{[l-1]} n_c^{[l-1]}\)</span> with subscripts representing height, width and channel respectively.</li>
+<li>Then Output: <span class="math inline">\(n_H^{[l]} \times n_W^{[l]} \times n_c^{[l]}\)</span> where
+<ul>
+<li><span class="math inline">\(n^{[l]} = \lfloor \frac{n^{[l-1]} +2p^{[l]}-f^{[l]}}{[l]}{2} + 1 \rfloor\)</span> where the subscripts should be filled to denote width or height.</li>
+</ul></li>
+<li>Activation dimensions match the Output. so <span class="math inline">\(a^{[l]} = n_H^{[l]} \times n_W^{[l]} \times n_c^{[l]}\)</span></li>
+<li>If you’re using batch-gradient descent, then activations will be stored with an extra dimension <span class="math inline">\(A^{[l]} = m \times n_H^{[l]} \times n_W^{[l]} \times n_c^{[l]}\)</span></li>
+<li>Weights: <span class="math inline">\(f^{[l]} \times f^{[l]} \times n_c^{[l-1]} \times n_c^{[l]}\)</span></li>
+<li>bias: <span class="math inline">\(n_c^{[l]}\)</span> which would be stored with dimensions <span class="math inline">\((1,1,1,n_c^{[l]})\)</span></li>
+</ul>
+</div>
+<div id="pooling" class="section level2">
+<h2>Pooling</h2>
+<div class="figure">
+<img src="Images/max_pooling.PNG" alt="Max-pooling with stride-size=2 and filter-size=2." />
+<p class="caption">Max-pooling with <em>stride-size</em>=2 and <em>filter-size</em>=2.</p>
+</div>
+<p>Pooling is a resolution-reduction layer applied within a Neural Network. There are 2 main types of which the most commonly used is max-pooling.</p>
+<ul>
+<li><em>Max-pooling</em> applies a window function to each channel and outputs the maximum value of each pixel in that channel</li>
+<li><em>Average-pooling</em> outputs the mean-value of each pixel in that channel.</li>
+</ul>
+<p>The intuition of max-pooling is that, when a convolution is applied, you’re trying to detect a feature in that area. Thus the maximum value within a window contains most of the relevant information for that region. Average-pooling is only really used to collapse your representation to a <span class="math inline">\(1\times 1\times n_c\)</span>.</p>
+<p>Note that there are no parameters used in pooling! Only hyperparameters for the stride and filter sizes used for the layer. typical values are <span class="math inline">\(f=2, s=2\)</span> which reduces the height and width of the representation by a factor of 2, or <span class="math inline">\(f=3, s=2\)</span>. It is possible to use padding as well, although this is rarely used (one exception later in this course).</p>
+<p>Note the change in size of pooling:</p>
+<ul>
+<li>Output size: <span class="math inline">\(\lfloor \frac{n - f}{s} +1\rfloor\)</span> for height and width</li>
+<li>Number of channels remains the same since the 2D-Convolution is applied to each channel 1 at a time.</li>
+</ul>
+</div>
+<div id="example-of-architecture" class="section level2">
+<h2>Example of Architecture</h2>
+<p><img src="Images/Example%20of%20Neural%20Net%20Architecture.PNG" alt="NN Architecture example" /> Imagine you’re fitting a NN to the MNIST dataset. I will just list out the steps in the above image here. You begin with a <span class="math inline">\(32 \times 32\)</span> RBG-image. Then: 1. - Apply a Convolution layer with filter-size = 5 and stride-length=1 and 6 channels - Apply max-pooling with filter-size=2, stride-length = 2. - Note typically a pooling layer is still counted as the same layer as it’s input (since there are no parameters I guess) 2. - Apply a Convolution layer with filter-size = 5 and stride-length=1 and 16 channels - Apply max-pooling with filter-size=2, stride-length = 2. - The resultant representation is now flattened out into a <span class="math inline">\(400 \times 1\)</span> representation 3. -Apply a fully-connected layer of size 120. 4. - Apply a fully-connected layer of size 84 5. - Apply either a softmax-layer of size 10</p>
+<p>There are several things to note in this example:</p>
+<ul>
+<li>This pattern of applying convolutions then a fully-connected layers is typical.</li>
+<li>The size of the width and height of the representation typically decrease as you go through the layers</li>
+<li>The number of channels typically increases as you go through the layers</li>
+<li>The dense-layers typically use far more weights than the convolutional layers.</li>
+</ul>
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Layer
+</th>
+<th style="text-align:left;">
+Activation shape
+</th>
+<th style="text-align:right;">
+Activation Size
+</th>
+<th style="text-align:right;">
+# parameters
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Input
+</td>
+<td style="text-align:left;">
+(32,32,3)
+</td>
+<td style="text-align:right;">
+3072
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Conv1(f=5,s=1)
+</td>
+<td style="text-align:left;">
+(28,28,8)
+</td>
+<td style="text-align:right;">
+6272
+</td>
+<td style="text-align:right;">
+608
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+POOL1
+</td>
+<td style="text-align:left;">
+(14,14,8)
+</td>
+<td style="text-align:right;">
+1568
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Input
+</td>
+<td style="text-align:left;">
+(10,10,16)
+</td>
+<td style="text-align:right;">
+1600
+</td>
+<td style="text-align:right;">
+3216
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+POOL1
+</td>
+<td style="text-align:left;">
+(5,5,16)
+</td>
+<td style="text-align:right;">
+400
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FC3
+</td>
+<td style="text-align:left;">
+(120,1)
+</td>
+<td style="text-align:right;">
+120
+</td>
+<td style="text-align:right;">
+48120
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FC4
+</td>
+<td style="text-align:left;">
+(84,1)
+</td>
+<td style="text-align:right;">
+84
+</td>
+<td style="text-align:right;">
+10164
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Softmax
+</td>
+<td style="text-align:left;">
+(10,1)
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+850
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="why-convolutions" class="section level2">
+<h2>Why Convolutions?</h2>
+<p>Main advantages:</p>
+<ol style="list-style-type: decimal">
+<li><p>Parameter Sharing - A feature detector (such as a vertical edge detector) that’s useful in one part of an image is probably useful in another part of an image.</p></li>
+<li><p>Sparcity of connections - In each layer, each output value depends on only a small number of inputs.</p></li>
+</ol>
+<p>For parameter sharing, if we’re looking for a cat in an image, we’d want to use the same search regardless of where in the image we’re looking. This means CNNs are robust to <em>Translation Invariance</em> (meaning a cat shifted a few pixels to the right is still a cat)</p>
+<p>Sparcity of connections means we don’t have as many parameters we need to learn.</p>
+<p>Andrew Ng doesn’t make the point here, but its made in other books, that Convolutional layers have the idea that the relationships between nearby pixels is probably more important than the relationships of distant pixels. Thus a CNN starts off looking in small regions and, as the representation decreases in height and width, information from further away in the image gets interacted with.</p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

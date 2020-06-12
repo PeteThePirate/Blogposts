@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Peter Smith" />
+
+<meta name="date" content="2020-05-11" />
+
+<title>Setting up RStudio inside a container</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Setting up RStudio inside a container</h1>
+<h4 class="author">Peter Smith</h4>
+<h4 class="date">11 May 2020</h4>
+
+</div>
+
+
+<div id="ubuntu-packages-to-install" class="section level1">
+<h1>Ubuntu packages to install</h1>
+<p>Basically, in RStudio, we want to get through running these commands without issue to say that everythings installed correctly.</p>
+<pre class="r"><code>install.packages(&#39;tidyverse&#39;)
+install.packages(&#39;odbc&#39;)</code></pre>
+<p>This will highlight most Linux-packages that are missing and need to be installed. You will get a bunch of error messages of the following form.</p>
+<pre class="r"><code>Using PKG_CFLAGS=
+Using PKG_LIBS=-lxml2
+------------------------- ANTICONF ERROR ---------------------------
+Configuration failed because libxml-2.0 was not found. Try installing:
+ * deb: libxml2-dev (Debian, Ubuntu, etc)
+ * rpm: libxml2-devel (Fedora, CentOS, RHEL)
+ * csw: libxml2_dev (Solaris)
+If libxml-2.0 is already installed, check that &#39;pkg-config&#39; is in your
+PATH and PKG_CONFIG_PATH contains a libxml-2.0.pc file. If pkg-config
+is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:
+R CMD INSTALL --configure-vars=&#39;INCLUDE_DIR=... LIB_DIR=...&#39;</code></pre>
+<p>just install whatever Ubuntu package it’s looking for (in the above case libxml2-dev. In the end I needed to run the following commands</p>
+<pre class="r"><code>#for tidyverse
+sudo apt-get install libssl-dev
+sudo apt-get install libcurl4-openssl-dev
+sudo apt-get install libxml2-dev
+
+#for odbc
+sudo apt-get install unixodbc-dev</code></pre>
+<p>for the odbc package I had an issue where I had to remove and reinstall it. I don’t think future users would have this issue though, but if they do, removing and reinstalling follows the same approach as the Stringi issue below.</p>
+</div>
+<div id="stringi-issue" class="section level1">
+<h1>Stringi issue</h1>
+<p>There is also some issue with stringi that may need to be sorted out.</p>
+<p>The error I got was while trying to install tidyverse</p>
+<pre class="r"><code>Error in dyn.load(file, DLLpath = DLLpath, ...) : 
+  unable to load shared object &#39;/home/peter/R/x86_64-pc-linux-gnu-library/3.6/stringi/libs/stringi.so&#39;:
+  libicui18n.so.60: cannot open shared object file: No such file or directory
+Calls: &lt;Anonymous&gt; ... namespaceImport -&gt; loadNamespace -&gt; library.dynam -&gt; dyn.load
+Execution halted</code></pre>
+<p>googling this leads to these links, with the advice given to just delete and reinstall stringi.</p>
+<pre class="r"><code>https://community.rstudio.com/t/unable-to-load-packages-cannot-open-shared-object-file/47453
+https://forum.manjaro.org/t/manjaro-update-now-r-cant-load-libraries/115419/2</code></pre>
+<p>*Delete stringi</p>
+<p>delete stringi (or just move it in the case below since I was nervous)</p>
+<pre class="r"><code>cd ~/R/x86_64-pc-linux-gnu-library/3.6
+mkdir ~/test
+mv stringi/* ~/test/
+rmdir stringi</code></pre>
+<p>Then reinstall in R-console</p>
+<pre class="r"><code>install.packages(&quot;stringi&quot;)
+install.packages(&#39;tidyverse&#39;)</code></pre>
+<p>tidyverse now installed without issue.</p>
+</div>
+<div id="vertica-connection" class="section level1">
+<h1>Vertica connection</h1>
+<div id="vertica-driver" class="section level2">
+<h2>Vertica Driver</h2>
+<p>No one else should need to do this, but I uploaded and extracted vertica drivers from Vertica website onto root. The following driver should exist, otherwise it needs to be installed</p>
+<pre class="r"><code>/opt/vertica/lib64/libverticaodbc.so</code></pre>
+<p>If it doesn’t exist for whatever reason. find drivers from vertica, and upload them. to unzip, I used,</p>
+<pre class="r"><code>tar -xzf vertica-client-9.3.1-0.x86_64.tar.gz</code></pre>
+<p>then moved it to the root folder so everyone would have access to it.</p>
+</div>
+<div id="create-.odbc.ini-file" class="section level2">
+<h2>Create .odbc.ini file</h2>
+<p>the .odbc.ini file needs to be created in your home directory. This file stores connection details that R will use when connecting to any database.</p>
+<p>To create your first connection, first navigate to your homefolder</p>
+<pre class="r"><code>cd ~</code></pre>
+<p>then use vim to create a connection</p>
+<pre class="r"><code>vim .odbc.ini</code></pre>
+<p>For example, my .odbc.ini folder has the following entry:</p>
+<pre class="r"><code>[vertica]
+Driver=/opt/vertica/lib64/libverticaodbc.so
+Server=10.0.0.211
+Database=
+Port=5433
+ResultBufferSize=0
+UID=xxxxx
+Password=xxxxx</code></pre>
+<p>NOTE: The username and password here are NOT your usual account username and passwords, get these from whoever maintains the SQL database you want to connect to.</p>
+<p>At this point your home directory should look something like this:</p>
+<pre class="r"><code>peter@sb-rstudio:~$ ls -lhart
+total 36M
+-rw-r--r--  1 peter 2157  807 Apr 29 12:11 .profile
+-rw-r--r--  1 peter 2157 3.7K Apr 29 12:11 .bashrc
+-rw-r--r--  1 peter 2157  220 Apr 29 12:11 .bash_logout
+drwxr-xr-x  5 root  root 4.0K Apr 29 12:11 ..
+drwx------  2 peter 2157 4.0K Apr 29 12:11 .cache
+drwxr-xr-x  3 peter 2157 4.0K Apr 29 12:11 R
+drwxr-xr-x  3 peter 2157 4.0K May  5 18:44 .config
+drwx------  3 peter 2157 4.0K May  5 19:15 .gnupg
+-rw-r--r--  1 peter 2157 1.3K May 11 20:27 .Rhistory
+drwxr-xr-x 15 peter 2157 4.0K May 11 20:27 .rstudio
+-rw-------  1 peter 2157 1.1K May 11 20:27 .bash_history
+-rw-r--r--  1 peter 2157  151 May 11 20:38 .odbc.ini
+-rw-------  1 peter 2157 2.7K May 11 20:38 .viminfo
+drwxr-xr-x  9 peter 2157 4.0K May 11 20:38 .</code></pre>
+</div>
+<div id="r-libraries-and-creating-connection" class="section level2">
+<h2>R-Libraries and creating connection</h2>
+<p>First make sure that the necessary packages are installed</p>
+<pre class="r"><code>library(DBI)
+library(odbc)
+
+#if the above packages aren&#39;t found, then run:
+  #install.packages(&#39;DBI&#39;)
+  #install.packages(&#39;odbc&#39;)
+
+con &lt;- dbConnect(odbc::odbc(), &quot;vertica&quot;, bigint=&quot;integer&quot;)</code></pre>
+<p>This connection should just work. You can validate this by running a query. If you’re struggling with the above, using the New Connection tab on one of your R-panes can also help to check what connections is can detect.</p>
+<p>That’s it!</p>
+</div>
+</div>
+<div id="roughwork" class="section level1">
+<h1>Roughwork</h1>
+<p>YOU PROBABLY DON’T NEED TO READ THIS. THIS WAS MY NOTES AS I WAS RECORDING THEM STEP BY STEP - BASICALLY AN UNNEAT VERSION OF THE ABOVE</p>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">–New container:</td>
+</tr>
+</tbody>
+</table>
+<p>basically, installing tidyverse highlights a bunch of things I need to install with sudo.</p>
+<ol style="list-style-type: decimal">
+<li>in R, tried install.packages(‘tidyverse’) get a whole bunch of errors of the form</li>
+</ol>
+<pre class="r"><code>Using PKG_CFLAGS=
+Using PKG_LIBS=-lxml2
+------------------------- ANTICONF ERROR ---------------------------
+Configuration failed because libxml-2.0 was not found. Try installing:
+ * deb: libxml2-dev (Debian, Ubuntu, etc)
+ * rpm: libxml2-devel (Fedora, CentOS, RHEL)
+ * csw: libxml2_dev (Solaris)
+If libxml-2.0 is already installed, check that &#39;pkg-config&#39; is in your
+PATH and PKG_CONFIG_PATH contains a libxml-2.0.pc file. If pkg-config
+is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:
+R CMD INSTALL --configure-vars=&#39;INCLUDE_DIR=... LIB_DIR=...&#39;
+--------------------------------------------------------------------</code></pre>
+<p>So I try installing each one in terminal, then retry installing R until I’ve installed all the necessary stuff. in terminal:</p>
+<pre class="r"><code>sudo apt-get install libssl-dev
+sudo apt-get install libcurl4-openssl-dev
+sudo apt-get install libxml2-dev</code></pre>
+<p>after this, installing tidyverse gives the following error</p>
+<pre class="r"><code>Error in dyn.load(file, DLLpath = DLLpath, ...) : 
+  unable to load shared object &#39;/home/peter/R/x86_64-pc-linux-gnu-library/3.6/stringi/libs/stringi.so&#39;:
+  libicui18n.so.60: cannot open shared object file: No such file or directory
+Calls: &lt;Anonymous&gt; ... namespaceImport -&gt; loadNamespace -&gt; library.dynam -&gt; dyn.load
+Execution halted</code></pre>
+<p>googling this leads to this link</p>
+<pre class="r"><code>https://community.rstudio.com/t/unable-to-load-packages-cannot-open-shared-object-file/47453
+https://forum.manjaro.org/t/manjaro-update-now-r-cant-load-libraries/115419/2</code></pre>
+<p>from there, there is the advice:</p>
+<pre class="r"><code>You have to rebuild the stringi library. Not as root, since other R libraries depend on the user stringi.so library (the path is important in this case).
+
+The easiest way might be simply removing the /home/chance/R/x86_64-pc-linux-gnu-library/3.6/stringi folder and &quot;reinstall&quot; stringi as a user . Which means build it against the new icu library.</code></pre>
+<p>I’m a bit nervoes to follow instructions, but here goes</p>
+<p>delete stringi</p>
+<pre class="r"><code>cd ~/R/x86_64-pc-linux-gnu-library/3.6
+mkdir ~/test
+mv stringi/* ~/test/
+rmdir stringi</code></pre>
+<p>in console</p>
+<pre class="r"><code>install.packages(&quot;stringi&quot;)
+install.packages(&#39;tidyverse&#39;)</code></pre>
+<p>and voila - tidyverse is installed. as a note, appare</p>
+<p>OK, let’s see if I can get that connection to vertica working</p>
+<div id="connecting-to-vertica" class="section level2">
+<h2>connecting to vertica</h2>
+<p>OK, so first, I downloaded drivers from Vertica’s website and uploaded it onto the Rstudio container</p>
+<p>then I unzipped it in my home directory with</p>
+<pre class="r"><code>tar -xzf vertica-client-9.3.1-0.x86_64.tar.gz</code></pre>
+<p>I then moved the opt folder this creates into root so everyone can access it</p>
+<p>ok error time. try installing packages</p>
+<pre class="r"><code>library(odbc)
+Error: package or namespace load failed for ???odbc??? in dyn.load(file, DLLpath = DLLpath, ...):
+ unable to load shared object &#39;/home/peter/R/x86_64-pc-linux-gnu-library/3.6/odbc/libs/odbc.so&#39;:
+  libiodbc.so.2: cannot open shared object file: No such file or directory</code></pre>
+<p>ok I think I had tried installing odbc already. let me delete it first and start from scratch</p>
+<p>in console</p>
+<pre class="r"><code>peter@sb-rstudio:~/R/x86_64-pc-linux-gnu-library/3.6$ rm -r odbc</code></pre>
+<p>then we get familiar errors when trying to reinstall odbc</p>
+<pre class="r"><code>sudo apt-get install unixodbc-dev</code></pre>
+<p>now install.packages(‘odbc’) installs fine if running it gives a corrupt file issue, restarting R with .rs.restartR() fixed the issue for me</p>
+<pre class="r"><code>peter@sb-rstudio:~$ ls
+R  test  vertica-client-9.3.1-0.x86_64.tar.gz</code></pre>
+<p>now, I created a .odbc.ini folder in my home directory.</p>
+<p>my home directory currently looks as follows</p>
+<pre class="r"><code>peter@sb-rstudio:~$ ls -lhart
+total 36M
+drwxr-xr-x  3 peter 2157 4.0K Jan  3 00:38 opt
+-rw-r--r--  1 peter 2157  807 Apr 29 12:11 .profile
+-rw-r--r--  1 peter 2157 3.7K Apr 29 12:11 .bashrc
+-rw-r--r--  1 peter 2157  220 Apr 29 12:11 .bash_logout
+drwxr-xr-x  5 root  root 4.0K Apr 29 12:11 ..
+drwx------  2 peter 2157 4.0K Apr 29 12:11 .cache
+drwxr-xr-x  3 peter 2157 4.0K Apr 29 12:11 R
+drwxr-xr-x  3 peter 2157 4.0K May  5 18:44 .config
+drwx------  3 peter 2157 4.0K May  5 19:15 .gnupg
+-rw-r--r--  1 peter 2157  36M May  7 10:13 vertica-client-9.3.1-0.x86_64.tar.gz
+drwxr-xr-x  8 peter 2157 4.0K May 11 20:03 test
+-rw-r--r--  1 peter 2157 1.3K May 11 20:27 .Rhistory
+drwxr-xr-x 15 peter 2157 4.0K May 11 20:27 .rstudio
+-rw-------  1 peter 2157 1.1K May 11 20:27 .bash_history
+-rw-r--r--  1 peter 2157  151 May 11 20:38 .odbc.ini
+-rw-------  1 peter 2157 2.7K May 11 20:38 .viminfo
+drwxr-xr-x  9 peter 2157 4.0K May 11 20:38 .</code></pre>
+<p>note the opt folder and the .odbc.ini file. These are the 2 important things. inside the .odbc I have the following connection details</p>
+<pre class="r"><code>[vertica]
+Driver=/opt/vertica/lib64/libverticaodbc.so
+Server=10.0.0.211
+Database=
+Port=5433
+ResultBufferSize=0
+UID=xxxxx
+Password=xxxxx</code></pre>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
