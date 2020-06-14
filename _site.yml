@@ -6,3 +6,5 @@ navbar:
       href: index.html
     - text: "1. Feed-forward Neural Nets"
       href: Neural_Net_Notes.html
+html_document:
+ theme: cosmo

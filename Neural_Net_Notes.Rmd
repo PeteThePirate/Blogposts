@@ -1,18 +1,12 @@
 ---
 title: "Neural Network Notes"
-output:
-  html_document:
-    toc: yes
-    toc_collapsed: yes
-    toc_float: yes
-    theme: darkly
 ---
 
 The purpose of this notebook is for me to document a whole bunch of little tips and tricks for myself that I may want to refer to later when building Feed Forward Neural Nets. It's largely based on things I've picked up from Andrew Ng's Deep Learning Specialization on Coursera, but over time I'll hopefully be updating it with a things I've learnt from other sources, and learnings from mistakes I make along the way.
 
 Because I'm writing this primarily for quick reference in future, this notebook tends to have a much drier tone than I would like. Sorry about that...
  
-#Activation Functions
+# Activation Functions
 
 I'm not going to describe each function here since that's really easy to look up. Rather I'm just going to make some notes about usage.
 
@@ -24,7 +18,7 @@ I'm not going to describe each function here since that's really easy to look up
 
 * Softmax function is used as a final layer if we are using multiclass classification. It standardises the outputs to be interpretable as probabilities by ensuring they sum to 1. 
 
-#Train/Dev/Test set selection
+# Train/Dev/Test set selection
 
 For smaller datasets, 70/30/0 or 60/20/20 splits were common
 
@@ -32,7 +26,7 @@ But in practice, the Dev set only needs to be big enough to choose between multi
 
 Don't rob from your training data unnecessarily.
 
-#Dealing with Bias/Variance or overfitting/underfitting
+# Dealing with Bias/Variance or overfitting/underfitting
 
 Bias/Variance is an alternative view of "underfitting/overfitting" on your training set and we diagnose it by looking at the performance of the model on the training set versus the performance of the model on the dev set.
 
@@ -41,10 +35,10 @@ With regards to regularisation, it basically means training a bigger neural net 
 
 So the tradeoff is no longer really *bias vs variance*, but rather *bias vs time to train*.
 
-#Regularisation
+# Regularisation
 
 
-##L2-regularisation (weight-decay)
+## L2-regularisation (weight-decay)
 As expected from other regularisations, for example in lasso regression, regularisation in Neural Networks works by adding a penalisation term onto your cost function.
 
 If we are to regularise the L2-norm (which would usually be the case), we can express the cost function to be minimised  as
@@ -66,7 +60,7 @@ __L1 Regularisation__
 
 Using L1-regularisation can also be done, with the effect that it will make your neural network more sparse by setting lots of the weights to zero. However in the same video as linked above, the comment is made that the compression gains aren't great, so there should be some other motivating reason to use L1 over L2.
 
-##Dropout Regularisation
+## Dropout Regularisation
 
 __What is it?__
 
@@ -87,16 +81,16 @@ __Notes on Dropout__
 * Dropout will add jitter to the Cost-graph, so it will not be monotonically decreasing. 
 
 
-##Other Regularisation methods
+## Other Regularisation methods
 * Get more training data by augmenting training set (flipping, rotating, random cropping etc)
 * Early stopping - stop updating the Neural Network when the dev-set error starts increasing. This does have a downside though in that you're entering into the bias/variance tradeoff. Other methods are *Orthogonal* in that they can fix one aspect of your model while having little effect on others.
 
-#Setting up your optimization problem
+# Setting up your optimization problem
 
-##Normalize your inputs
+## Normalize your inputs
 As usual, its best to normalise data to be zero-mean and unit variance. Note - calculate the training set means and variances for each feature, and use these means and variances on the test set and in production as well. It will make your network train faster.
 
-##Vanishing/Exploding Gradients
+## Vanishing/Exploding Gradients
 Imagine a very deep network, such as in the image provided.
 
 ![example NN for exploding/vanishing gradients from Andrew Ng's Coursera course](Images/Vanishing_gradients_example.png)
