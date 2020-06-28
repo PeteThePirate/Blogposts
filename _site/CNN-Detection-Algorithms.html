@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Peter Smith" />
+
+
+<title>Detection Algorithms</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="Neural_Net_Notes.html">1. Feed-forward Neural Nets</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Detection Algorithms</h1>
+<h4 class="author">Peter Smith</h4>
+<h4 class="date">21/06/2020</h4>
+
+</div>
+
+
+<div id="object-localization" class="section level1">
+<h1>Object Localization</h1>
+<p><strong>Goal:</strong> Predict what type of object is in an image, and draw a bounding box around the object in the image</p>
+<p><strong>Input Data:</strong></p>
+<p>The input data needs to have the bounding boxes already provided, and a classification label</p>
+<p><strong>Output Format:</strong></p>
+<p>Suppose you are trying to predict whether an image contains any of 3 different objects (car, pedestrian, motorcycle) or if it is just background. Your output vector will have the following elements:</p>
+<ul>
+<li><span class="math inline">\(p_c\)</span>: the probability that the image contains an object (regardless of object type)</li>
+<li><span class="math inline">\(c_1, \dots, c_3\)</span> the probability that the object is of class <span class="math inline">\(i\)</span> given that there is an object in the image.</li>
+<li><span class="math inline">\(b_x,b_y,b_h,b_w\)</span> denoting <span class="math inline">\((x,y)\)</span> coordinates for the box as well as height and width.</li>
+<li>Note that it’s using the common decomposition: <span class="math inline">\(P(car) = P(object)*P(car|object)\)</span>.</li>
+<li>Loss function: If there is an object in an image, your loss function should take squared error of each element in your output as normal. However, if the image is just background, you don’t care about the values for any element besides <span class="math inline">\(p_c\)</span>, so you only penalise on that value.</li>
+</ul>
+</div>
+<div id="object-detection" class="section level1">
+<h1>Object Detection</h1>
+<div id="sliding-window-algorithm" class="section level2">
+<h2>Sliding window algorithm</h2>
+<p>First train a model with closely cropped pictures of cars. This gives you a car-detection network. Then on a larger image, run a sliding window across the image until you find a car. Then run a slightly larger window through the image. then a slightly larger window and so on.</p>
+<p>The disadvantage of this is computationality since you have to run many windows through your network for each image. So typically it was used with simpler algorithms.</p>
+<p>Fortunately, sliding windows algorithm can be implemented convolutionally for performance gains with CNN</p>
+</div>
+<div id="convolutional-implementation-of-sliding-windows-algorithm" class="section level2">
+<h2>Convolutional Implementation of Sliding Windows Algorithm</h2>
+<div class="figure">
+<img src="Images/FC_layer_as_convolution.PNG" alt="Turning FC layer into convolutional layer." />
+<p class="caption">Turning FC layer into convolutional layer.</p>
+</div>
+<p>Before we show the implementation of sliding windows using convolutions, we first introduce a trick to represent fully connected layers as convolutions. Usually to get to a fully-connected layer, a previous layer is just ‘flattened out’ without transformation. But instead, in the image above, 400 5x5 (by 16) filters can be used instead, the fully connected layers are turned into 1x1x400 convolutional layers. Note the result isn’t the exact same as just reshaping - its some linear transformation of those nodes. But since the these nodes are all then just put into a linear function anyway before being transformed its a meaningless difference.</p>
+<div class="figure">
+<img src="Images/Sliding_Window_using_Convolutions.PNG" alt="Using Convolutions to efficiently implement sliding windows" />
+<p class="caption">Using Convolutions to efficiently implement sliding windows</p>
+</div>
+<p>Representing our neural network using convolutions as shown above means we can implement a sliding window algorithm in a single forward pass of the network as in the second image above. The conv-layers inside your network share information quite well, (for example, the red and the green squares in the second example share most of the nodes in the internal representations), and the layers that replaced the fully connected layers now just become wider to contain the output for each sliding window. Note the Max-Pool layer of size 2 means the effective window stride-size is size 2 as well.</p>
+</div>
+</div>
+<div id="yolo-algorithm" class="section level1">
+<h1>YOLO Algorithm</h1>
+<div id="bounding-box-predictions" class="section level2">
+<h2>Bounding Box Predictions</h2>
+<p><img src="Images/Yolo_description1.PNG" alt="YOLO algorithm - splitting the image into a grid" /> Many windows will contain parts of the car. As part of YOLO, we split the larger image into a grid of say, 9 smaller cells (3x3). In practice you’d choose a small enough grain to try guarantee 1 object per cell - say 19x19.</p>
+<ul>
+<li><p>Split your image into 3x3 cells (or whatever value)</p></li>
+<li><p>Each object is assigned to the cell which contains its centerpoint</p></li>
+<li><p>Each grid has labels <span class="math inline">\((p_c, b_x, b_y, b_h, b_w, c_1, c_2, c_3)\)</span> (assuming 3 different object types)</p></li>
+<li><p>Output layer has dimension $ 3 3 8$</p></li>
+</ul>
+<p>Runs very fast since it’s a convolutional algorithm - even for realtime object detection.</p>
+</div>
+<div id="intersection-over-union" class="section level2">
+<h2>Intersection Over Union</h2>
+<p>To figure out if overlapping boxes are identifying the same object or just an overlapping object, we calculate <span class="math inline">\(IoU=\frac{A \cap B}{A\cup B} = \frac{Area(A\cap B)}{Area(A) + Area(B) - Area(A\cap B)}\)</span></p>
+<p>If the IoU is greater than say 0.5, then we assume it is the same object. The details are shown in the non-max Suppression description</p>
+</div>
+<div id="non-max-suppression" class="section level2">
+<h2>Non-max Suppression</h2>
+<p>If we use a fine mesh for YOLO, it helps guarantee that each grid-cell will contain only 1 centerpoint of an object. However many cells will contain some part of the object and, at implementation, we will have many adjacent cells detecting the same car. We need to reduce this to only keep the cell that is most confident that it contains a car. We map out the process here</p>
+<ul>
+<li>First, discard all boxes with <span class="math inline">\(p_c \leq 0.6\)</span></li>
+</ul>
+<p>While there are overlapping boxes</p>
+<ul>
+<li><p>Pick box with largest <span class="math inline">\(p_c\)</span>. Output this as a prediction</p></li>
+<li><p>Discard remaining boxes wuth <span class="math inline">\(IoU \geq 0.5\)</span> with the box in the previous step</p></li>
+</ul>
+<p>Note - only do nonmax suppression when the boxes think it’s the same object. If there is a pedestrian in front of a car, we should leave them be.</p>
+</div>
+<div id="anchor-boxes" class="section level2">
+<h2>Anchor boxes</h2>
+<p><img src="Images/YOLO_Anchor_box_example.PNG" /></p>
+<p>There are 2 ways to motivate for anchor boxes</p>
+<ol style="list-style-type: decimal">
+<li><p>One of the problems with YOLO as described so far, is that each grid can only handle 1 object in it since it’s parameterisation doesn’t have space for more. Anchor boxes would allow multiple objects with centers in the same grid-cell.</p></li>
+<li><p>It allows aspects of your model to specialise - if pedestrians tend to be tall, and cars tend to be wide, then using anchor boxes will allow your model to have aspects that are ‘car-focussed’ and ‘pedestrian-focussed’.</p></li>
+</ol>
+<p>In practice, point 1 doesn’t happen too often since you could just choose a finer mesh, but point 2 is nice since the features you’d look for to identify a car are quite different to the features you’d use to identify a person</p>
+<p>The idea is that you double (or triple or whatever) the length of your labels for a grid so that you can store multiple objects of data into the same grid. Then, you follow a convention of ‘tall skinny objects go into the first position’, and ‘shorter wider objects go into the second position’. See the example above.</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

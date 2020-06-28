@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Peter Smith" />
+
+
+<title>CNN - Face Recognition and Neural Style Transfer</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="Neural_Net_Notes.html">1. Feed-forward Neural Nets</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">CNN - Face Recognition and Neural Style Transfer</h1>
+<h4 class="author">Peter Smith</h4>
+<h4 class="date">24/06/2020</h4>
+
+</div>
+
+
+<div id="face-recognition" class="section level1">
+<h1>Face Recognition</h1>
+<ul>
+<li><p>Face Verification: Has an input image with a paired ID. The network must decide if the image matches the ID</p></li>
+<li><p>Face Recognition: Has an input image and a database of K persons. Must output the ID for who the image is of, or ‘not recognised’.</p></li>
+</ul>
+<p>We begin building a face verification system, then will implement it as a recognition system if it is good enough</p>
+<div id="one-shot-learning" class="section level2">
+<h2>One Shot Learning</h2>
+<p>For a face-recognitions system to work, You need to be able to recognise a person given only 1 example of their face. Think of taking a photo ID, and then deciding if the person you’re looking at is the same person as in the ID.</p>
+<p>This could be solved by having a final softmax layer with say 5 outputs if there are 4 people in your verification system (and 1 output for unknown). But if you need to add a person to your network, you’d need to retrain the entire thing to have an output with 6 layers.</p>
+<p>Thus, instead of building a model that predicts ‘Are you person X’, you rather build a model that takes in 2 images and outputs how similar the people in the 2 images look. This solves expanding your system to include more people. So, you want to learn a similarity function. <span class="math inline">\(d(img1,img2)\)</span> which outputs a small value if it is the same person, and a large value otherwise. Then, at Recognition time, We compare the image to all the images in the database, and output the ID the new image is most similar to.</p>
+</div>
+<div id="siamese-network" class="section level2">
+<h2>Siamese Network</h2>
+<p>To learn this function <span class="math inline">\(d()\)</span>, we will use a Siamese Network.</p>
+<div class="figure">
+<img src="Images/CNN-Siamese-Network.PNG" alt="example of a Siamese Network" />
+<p class="caption">example of a Siamese Network</p>
+</div>
+<p>The idea is to take your database images, and to use a network to compress it to some smaller representation. Then using the same network, compress your input images to the same representation, and then to calculate the distance between the representations at this level - perhaps using an L2-norm.</p>
+<p>So we want to learn parameters such that if 2 images are the same, the the L2-norm is small, but if they are different people, the L2-norm is large.</p>
+<p>To learn these parameters, we will make use of Triplet Loss</p>
+</div>
+<div id="triplet-loss" class="section level2">
+<h2>Triplet Loss</h2>
+<p>To train using triplet loss, you need an ‘Anchor’ image (stored in database), a Positive image (of the same person), a Negative image (of a different person, but who looks quite similar)</p>
+<p>Then we want <span class="math inline">\(||f(A) - f(P)||^2 \leq ||f(A) - f(N)||^2 + \alpha\)</span>. where <span class="math inline">\(f()\)</span> denotes the compressed-representation of the network. The <span class="math inline">\(\alpha\)</span> is added to the above condition to stop the network from finding a trivial solution such as always outputting a constant value.</p>
+<p>It takes lots of examples to get this correct - commercial systems are trained on very large datasets (more than 1 million images). Again, using pretrained models is probably the best approach.</p>
+</div>
+<div id="face-verification-as-a-binary-classification-problem" class="section level2">
+<h2>Face Verification as a binary classification problem</h2>
+<p>Rather than using triplet loss, one can also treat facial recognition as a binary-classification problem. In this case, you still have a siamese network calculating some representation of your 2 images, but then you have a final softmax-layer that computes an activation on the differences between these 2 representations and outputs either a 1 or 0 if they are of the same person. Your training set would now be just pairs of images rather than triplets. It’s not clear what the benefit of either approach is to me.</p>
+<p><img src="Images/CNN%20-%20Siamese%20Network%20as%20binary%20classification.PNG" /></p>
+<p>#Neural Style Transfer</p>
+<p><a href="CNN-Neural%20Style%20Transfer%20Example.PNG">Example of Neural Style Transfer</a></p>
+<p>Problem statement: Given a content image and a style image, we want to generate a new picture of the content image, but in the style of the style image. The example given is to create a picture of some building that looks like a Van Gogh painting (so Starry Night is the style image).</p>
+<p>##What are ConvNets learning</p>
+<div class="figure">
+<img src="Images/CNN-visualising%20deeper%20layers_example_architecture.PNG" alt="Example architecture for CNN discussed here" />
+<p class="caption">Example architecture for CNN discussed here</p>
+</div>
+<p>To visualise what it is that your convolutional network is learning, you can go through your training data-set and pick out the regions of your image that maximally activate a node in your network. Remember, nodes in the first layer of your network will have only seen small regions of your image at a time, then as you go deeper, the nodes will have been exposed to larger regions of the image.</p>
+<p>In the image below, The 9 best examples are shown that maximally activate some nodes in various layers of the network. In the early layers, you’re detecting basic shapes, but as we go deeper, we can see there are some nodes that respond strongly to the wheels of a car, or to specific dog-breeds etc.</p>
+<p><img src="Images/CNN-visualising%20deeper%20layers.PNG" /></p>
+<p>We will use this intuition to build the Neural Style transfer.</p>
+<p>##Cost function</p>
+<p>We create cost function <span class="math inline">\(J(G) = \alpha J_{\text{content}}(C,G) + \beta J_{\text{style}}(S,G)\)</span>. The original paper used 2 parameters (<span class="math inline">\(\alpha\)</span>,<span class="math inline">\(\beta\)</span>) to parameterise this and we do the same even though it seems we could get away with 1.</p>
+<p>###Generating the new image</p>
+<ul>
+<li>initialise the generated image randomly, G: <span class="math inline">\(100 \times 100 \times 3\)</span>. G would now just be white noise.</li>
+<li>Use Gradient descent to minimize <span class="math inline">\(J(G)\)</span>. As you step through this process, G will closer represent the desired image.</li>
+</ul>
+<p>###Content Cost Function</p>
+<p>We calculate the content cost on some chosen layer in the network. If we choose a layer that is very shallow, it will force your generated values to be very close to the pixel values. If it’s too deep, it may get too abstract - in particular positionally. So if there’s a dog in your input image, it will put a dog somewhere in your resultant image, but not necesarily in the same place, since positional information gets lost further down the network</p>
+<ul>
+<li>Choose a hidden image layer <span class="math inline">\(l\)</span></li>
+<li>Use a pre-trained ConvNet (Eg. VGG network)</li>
+<li>Measure how similar your content and generated images are in content, by comparing the activation of layer <span class="math inline">\(l\)</span> in both images</li>
+<li>so <span class="math inline">\(J_{\text{content}}(C,G) = ||a^{[l][C]}-a^{[l][G]}||^2\)</span></li>
+</ul>
+<p>Ensuring these layers are similar enough ensures that they contain similar content</p>
+<p>###Style Cost Function</p>
+<p>Style is defined as the <em>correlation</em> between activations across channels.</p>
+<p>Why does <em>style</em> get treated as correlation?</p>
+<p><img src="Images/CNN-Neural%20Style%20Transfer%20style%20description.PNG" /></p>
+<p>Suppose one channel of activations is detecting vertical lines in an image, and a second channel is detecting orange-coloured patches. If these channels are highly correlated, it means that when we see vertical lines, we should also see orange patches. If we force this correlation onto our content image, it should transform a picture of a building to be more orange if that is how buildings are typically coloured in our style image. So the degree of correlation between channels gives a measure of style.</p>
+<p>So we create a style matrix as follows:</p>
+<ul>
+<li>Let <span class="math inline">\(a_{i,j,k}^{[l]}\)</span> denote the activation at <span class="math inline">\((i,j,k)\)</span> (representing height, width and channel respectively) for layer <span class="math inline">\(l\)</span>.</li>
+<li>Then we calculate <span class="math inline">\(G^{[l]}\)</span> as an <span class="math inline">\(n_c^{[l]}\times n_c^{[l]}\)</span> matrix where $ n_c^{[l]}$ denotes the number of channels in layer <span class="math inline">\(l\)</span>.</li>
+<li>Then calculate <span class="math inline">\(G_{k,k&#39;} = \sum_{\forall i} \sum_{\forall j} a_{i,j,k}^{[l]} a_{i,j,k&#39;}^{[l]}\)</span> for each <span class="math inline">\((k,k&#39;)\)</span> pair for both the Style image and the Generated image</li>
+<li>Then <span class="math inline">\(J^{[l]}_{\text{style}}(S,G) = ||G^{[l](S)}-G^{[l](G)}||^2_F\)</span> denoting the Frobenius norm (so take elementwise differences)</li>
+<li>But, while content is calculated on a single layer, we will use style cost across multiple layers, so</li>
+<li><span class="math inline">\(J_{\text{style}}(S,G) = \sum_l \lambda^{[l]}J^{[l]}_{\text{style}}(S,G)\)</span></li>
+</ul>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
