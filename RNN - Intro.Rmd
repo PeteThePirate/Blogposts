@@ -1,0 +1,32 @@
+---
+title: "Recurrent Neural Networks"
+author: "Peter Smith"
+date: "29/06/2020"
+output: html_document
+---
+
+#Notation
+
+* $x^{(i)<t>}$ denotes the $t-th$ element in the input sequence for training example $i$.
+* $y^{(i)<t>}$ denotes the $t-th$ element in the output sequencetraining example $i$.
+* $T_x$ denotes the length of the input sequence $x$
+* $T_y$ denotes the length of the output sequence $y$
+
+__Representing Words__
+
+We create a dictionary of words (say of 10 000 words), and then encode a sentence using 1-hot encoding. So a sentence of 7 words would become a sequence of 7 1x10000 vectors.
+
+#Recurrent Neural Network Model
+
+##Why not a standard network?
+
+Problems:
+
+  * Inputs, uotputs can be different lengths in different examples.
+  * A Feed Forward NN doesn't share features learned across different positions of text.
+  * Reduces the parameterisation burden of the network
+  
+##What is an RNN?
+
+
+  

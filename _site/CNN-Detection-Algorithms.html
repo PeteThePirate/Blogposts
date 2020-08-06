@@ -376,6 +376,17 @@ $(document).ready(function () {
 <p>In practice, point 1 doesn’t happen too often since you could just choose a finer mesh, but point 2 is nice since the features you’d look for to identify a car are quite different to the features you’d use to identify a person</p>
 <p>The idea is that you double (or triple or whatever) the length of your labels for a grid so that you can store multiple objects of data into the same grid. Then, you follow a convention of ‘tall skinny objects go into the first position’, and ‘shorter wider objects go into the second position’. See the example above.</p>
 </div>
+<div id="putting-it-all-together---the-complete-yolo-algorithm" class="section level2">
+<h2>Putting it all together - the complete YOLO algorithm</h2>
+<p><img src="Images/Yolo_Training.PNG" /></p>
+<p>Above is an example of what your training inputs would look like - incorporating Anchor boxes, and the grid for YOLO. Then, when making predicitons, we would also implement non-max suppression to deal with adjacent/overlapping boxes.</p>
+</div>
+</div>
+<div id="region-proposals" class="section level1">
+<h1>Region Proposals</h1>
+<p><img src="Images/R-CNN-example.PNG" /> This is an alternative to YOLO, but not as well used I don’t think.</p>
+<p>This paper proposed R-CNN (regions with CNNs) and this tries to choose just a few regions to run your CNN on rather than on all windows (as done with CNNs).</p>
+<p>This breaks your object identification into 2 steps - first find regions on which to run the CNN, then run the CNN whereas YOLO is just 1 step by just running the CNN everywhere.</p>
 </div>
 
 
