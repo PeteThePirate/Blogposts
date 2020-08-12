@@ -1,15 +1,19 @@
 ---
-title: "S2 - Machine Learning Pipeline - Research Environment"
+title: "Deploying Machine Learning Models"
 author: "Peter Smith"
 date: "08/07/2020"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      toc_collapsed: true
 ---
 
-# Section 2
+# Section 2: ML Pipeline - Research Environment
 
-![Machine Laerning Pipeline - circled modules need to be put into production](./S2 - Machine Learning Pipeling.PNG)
+![*Machine Learning Pipeline - circled modules need to be put into production*](./S2 - Machine Learning Pipeling.PNG)
 
-# Section 3
+# Section 3: ML System Architecture
 
 Machine learning in production requires multiple different components in order to work. 'Architecture' describes the way software components are arranged and the interactions between them.
 
@@ -24,7 +28,7 @@ Machine learning in production requires multiple different components in order t
 * Model errors can be hard to detect with traditional tests
 * Separation of expertise - because deploying a model requires so many people, its possible everyone just blindly does their role and no one understands the entire process.
 
-![Research vs Production Environments](./S2 - Research vs Production.PNG)
+![*Challenges in research vs production environments*](./S2 - Research vs Production.PNG)
 
 ### Key Principles for ML System Architecture
 
@@ -37,22 +41,89 @@ Machine learning in production requires multiple different components in order t
 
 ### General ML Architectures
 
-1. Train by batch, predict on the fly, serve via REST API
+1. Train by batch, predict on the fly, serve via REST API (focus for this course)
 2. Train by batch, predict by batch, serve via shared database (TFG Online)
 3. Train, predict by streaming
 4. Train by batch, predict on mobile (or other client)
 
 ![Architecture Comparison] (./S2 - ML Architectures.PNG)
 
-###Architecture breakdown for train by batch, predict on the fly
+### Architecture breakdown for train by batch, predict on the fly
 
-Architecture can be broken up into multiple layers:
+The steps our system architecture needs to take can be broken up into multiple layers:
 
-1. Data Layer
-2. Feature Layer
-3. Scoring Layer
-4. Evaluation Layer: checks equivalence of 2 models - eg actual vs predicted.
+1. __Data Layer__: provide access to all data sources
+2. __Feature Layer__: generate features in transparent, reusable and scalable way
+3. __Scoring Layer__: transform features into predictions
+4. __Evaluation Layer__: checks equivalence of 2 models - eg actual vs predicted
 
+![*Note overlap of code on feature extraction between training and production*](./S3 - Predict on the Fly diagram.PNG)
 
+### Building a Reproducible ML Pipeline
 
+We need to guarantee the entire pipeline is reproducible so that a model and its predictions can be replicated exactly. This requires reproducibility in the following steps.
 
+__Input data__
+
+* Save a snapshot of training data if possible (may break data practice rules). Otherwise design data sources with accurate timestamps so that a view of the data at a point in time can be retrieved
+
+* SQL may return results in different order - it may be important to keep track of training vs testing sets used.
+
+__Feature Engineering__
+
+* Code to generate features should be tracked properly with version control and published with auto-incremented or timestamp hashed versions (not sure I understand how to auto-increment to track which version of a function is used).
+* Sample means used for normalisation/imputation should be stored.
+* If randomly imputing, remember to set a seed.
+
+__Model Building__
+
+* Record the order of features
+* Record feature transformations (log, standardisation, etc)
+* Record hyperparameters
+* Set seed if model has a random element
+* if the final model is an ensemble, record the ensemble structure
+
+__Model Deployment__
+
+* Software versions should match exactly - list libraries and their versions.
+* Use a container and track its specifications (such as image version)
+* Research, develop and deploy utilising the same language. (Don't build in R, deploy in Python)
+* Make sure model integration is understood before deployment and develop with this is mind
+  - avoid using features not available when the model is live
+  - watch out for live-population being different from training-population.
+  
+# Section 4: Pipeline - Writing Production Code
+
+### Overview
+
+We need to write production code for the 3 steps circled in red in section 2. Namely, Preprocession, Variable Selection, and Model Building. We typically need to move from Notebooks into Scripts.
+
+Deployment code can be written in 3 main ways:
+
+* __Procedural Programming__: Write a sequence of functions as in Jupyter
+
+The other ways use Object-Oriented Programming
+
+* __Customer Pipeline__: Calls procedures in order
+* __Third-party Pipeline__: eg. Sci-kit learn pipeline
+
+### Procedural Programming
+
+Procedural programming involves writing procedures/functions/etc that can be called in a specific order. This is what I have done so far. It's not recommended inTypically involves the following:
+
+* A yaml file containing user-defined constants (paths to data or models, column-means used for normalisation, features required in data)
+* Script containing processing function definitions
+* Control script that is executed and runs all functions in the correct order
+
+__Advantages__:
+
+* Straightforward to create after notebooks
+* No software development skills required
+* Easy to manually check if it reproduces the original model
+
+__Disadvantages__:
+
+* Can get buggy
+* Difficult to test
+* Difficult to build software on top of it
+* Need to save a lot of intermediate files to store the transformation parameters
