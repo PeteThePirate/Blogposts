@@ -104,12 +104,14 @@ Deployment code can be written in 3 main ways:
 
 The other ways use Object-Oriented Programming
 
-* __Customer Pipeline__: Calls procedures in order
+* __Custom Pipeline__: Calls procedures in order
 * __Third-party Pipeline__: eg. Sci-kit learn pipeline
 
 ### Procedural Programming
 
-Procedural programming involves writing procedures/functions/etc that can be called in a specific order. This is what I have done so far. It's not recommended inTypically involves the following:
+Procedural programming involves writing procedures/functions/etc that can be called in a specific order. This is what I have done so far. Good start where you are the sole data scientist not supported by many developers, and there are not many models created. However where models are constantly deployed, updated and refreshed it is not a good solution.
+
+Typically involves the following:
 
 * A yaml file containing user-defined constants (paths to data or models, column-means used for normalisation, features required in data)
 * Script containing processing function definitions
@@ -124,6 +126,40 @@ __Advantages__:
 __Disadvantages__:
 
 * Can get buggy
-* Difficult to test
+* Difficult to test (mostly manual)
 * Difficult to build software on top of it
 * Need to save a lot of intermediate files to store the transformation parameters
+
+### Custom Pipeline
+
+A pipeline is a set of dataprocessing steps connected in series.
+
+We write our code in the form of objects. Objects can store data, as well as methods to modify that data. Thus objects can learn and store parameters for transformations as attributes.
+
+* Parameters are automatically refreshed every time a model is retrained
+* 2 methods will typically be created
+  + Fit: to learn parameters and save parameter as an object attribute
+  + Transform: To transform input data with the learnt parameters
+
+The sequence in which to pass data through objects is then saved as a pipeline.
+
+The entire pipeline is then saved as a single object - a Python pickle - with all information required for transforming and scoring data to get a prediction. Thus you have a single object that is your entire model - from data transformation through to scoring.
+
+
+__Advantages__:
+
+* Can be tested, versioned, tracked and controlled
+* Can build future models on top
+* Good software developer practice
+* Built to satisfy business needs
+
+__Disadvantages__:
+
+* Requires team of software developers to build and maintain
+* Overhead for data scientist to familiarise with code for debugging or adding on future models
+* Preprocessor not reusable, need to rewrite preprocessor class for each new ML model
+* Need to write new pipeline for each new ML model
+* Lacks versatility - may constrain the data scientist to what is available with an implemented pipeline
+
+
+
