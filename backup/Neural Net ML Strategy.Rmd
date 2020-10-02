@@ -1,0 +1,72 @@
+---
+title: "ML Strategy Notes"
+output:
+  html_document:
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+    theme: darkly
+---
+
+This notebook contains my personal notes on Andrew Ng's course 'Structuring Machine Learning Projects; on Coursera
+
+#Introduction to ML Strategy
+
+##Orthogonalization
+
+Orthogonalization refers to having some control to tune that only adjust a single aspect of your machine learning while keeping other aspects constant. 
+
+###Chain of assumptions in Machine Learning
+
+Typically, you'll diagnose your machine learning model on your data in the following order:
+
+
+1. Fit training set well on cost function (say approximately human-level performance)
+
+For example, you'd either build a bigger network, use Adam, or some other optimization.  
+
+2. Fit dev set well on cost function
+
+Here you'd regularize, or get a bigger training set etc.
+
+3. Fit test set well on cost function 
+
+Get a bigger dev set if performance there doesn't translate to performance on test set (probably overtuned)
+
+4. Performs well in real world
+
+Change dev set or cost function
+
+Early stopping is thus an example of a non-orthogonalised control, since stopping your training model early to improve performance on your dev set will also have a large effect on the performance on your training set. 
+
+#Setting up your goal
+
+##Single number evaluation metric
+
+It's useful to have a single number that you apply to decide whether the new thing you're trying is better or worse than the way your model was before. So for example, if you are trying to decide between 2 models:
+
+* __Model A__: with precision and recall of 95% and 90% respectively
+* __Model B__: with precision and recall of 98% and 85% respectively
+
+it's not immmediately clear which model you would prefer since they each perform better on separate metrics. But if you calculate the $F_1$-score which combines these 2 metrics, you can easily figure out which model you would prefer. This speeds up the iterative process of going through models. 
+
+##Satisficing and Optimizing metric
+
+Yes *satisfice* is a real word. It means 'decide on and pursue a course of action that will satisfy the minimum requirements necessary to achieve a particular goal'.
+
+
+The idea is that, if you have *N* metrics that you are interested in, you choose only 1 metric on which to optimize, and for all other metrics, you choose an upper bound to satisfy.
+
+
+For example, if we want to classify images in real time, we would be interested in both the accuracy and the run-time of the model. Thus, we would choose a maximum run-time of say 100ms, and choose the best model that works under this constraint. 
+
+##Train/dev/test sets
+
+1. Make sure your dev set and test set come from the same distribution!!
+
+2. with small data, the 70/30 train-test or the 60/20/20 train-dev-test set rules made sense. But now, the proportions aren't good guides. rather decide on a confidence level needed, and choose a test set of the required size. ie - use *n* not *p* to choose the size of your test set. The same rule applies for dev-set size.
+
+## 
+
+
+
