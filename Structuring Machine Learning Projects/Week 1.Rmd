@@ -1,0 +1,112 @@
+---
+title: "Structuring ML Learning Projects"
+author: "Peter Smith"
+date: "24/11/2020"
+output: html_document
+---
+
+# Introduction to ML Strategy
+
+
+## Why ML Strategy? 
+
+After fitting a model and getting a performance metric it's common to have many different ideas to attempt to improve performance.
+
+For example: 
+* Collect more data
+* Train algorithm for longer
+* Try a bigger network
+* Try dropout
+* Change architecture
+
+The goal here is to strategize what how to approach these problems.
+
+## Orthogonalization
+
+Principal of orthogonalisation: Each 'knob' should only affect 1 aspect of the network's performance, keeping all previously tuned aspects unaffected.
+
+Chain of assumptions in ML:
+
+1. Fit training set well on cost function
+2. Fit dev set well on cost function
+3. Fit test set well on cost function
+4. Performs well in real world
+
+Andrew Ng dislikes early-stopping because it violates this principle of orthogonalisation in that it affects both performance on training set and dev set.
+
+# Setting up your goal
+
+## Single number evaluation metric
+
+You should have a single metric that you're optimising on. For example, rather than precision and recall, use a combined metric such as the F1 score. This avoids the issue of having 2 models that are each better than each other when viewed from different perspectives. 
+
+## Satisficing and Optimizing metric
+
+* Satisficing metric: a minimum acceptable score on a certain metric that a final solution should achieve
+* Optimizing metric: a score to be maximized while achieving the satisficing metric.
+
+For example, a satisficing metric may be that your runtime must be lower that 100ms, but you optimise on accuracy of your classifier. Or else, maximise accuracy with a maximum number of false positives a day.
+
+## Setting up train/dev/test sets
+
+Choose a dev set and test set to reflect data you expect to get in the future and consider it important to do well on.
+
+Ensure Dev and Test set come from the same distribution. Trying to get as close to possible as split completely at random is best.
+
+__Note:__ It is most important that your dev and test sets have the same distribution - not necessarily the train-set (although this is a desirable feature). If new data becomes available from a different source (that perhaps doesn't reflect the way data will become available in production), it can go into train-set and be excluded from dev/test.
+
+## Size of Dev and test sets
+
+For small data you would use a 60/20/20 split or 70/30. Because in modern era we have much larger data-sizes, it's reasonable to use 98/1/1 split.
+
+Test set size should be big enough to give high performance of your system. It's an N problem rather than a P problem.For example, if you're training a classifier, you need loads of data to train your NN, but on the test set to estimate accuracy, you just need the confidence interval for the parameter of 2 Bernoulli Variables (for positive and negative cases). So depending how big or small you're happy with this CI being, that should inform your sample size requirement.
+
+## When to change dev/test sets and metrics
+
+When your metric is no longer rank-ordering algorithms correctly, you should change metric.
+
+ie. It's performing well on your train/dev/test sets, but it isn't actually translating into a good user experience.
+
+It's also possible that when you go live, the data is just inherently different to what you trained on. In this case, it may be best to rapidly start including some live data into your train and test rather than changing metric.
+
+# Comparing to human-level performance
+
+## Why human-level performance?
+
+1. It's starting to actually become feasible
+2. The workflow of ML is more efficient when it's a task humans can also do.
+3. If a human can outperform the Algorithm, then there is still plenty scope for improvement. Once human level is surpassed, it's often true that the model is very close to 'Bayes Optimal Error' and can't be improved much further.
+4. As long as humans outperform, we can improve our model with the following tools:
+    - Get human-labeled data
+    - Gain insight from manual error analysis - why did a human get a case right that a model got wrong.
+    - Better analysis of bias/variance (to be discussed further).
+
+## Avoidable bias
+
+Imagine you have a model with the following errors.
+
+* Training Error 8%
+* Dev error 10%
+
+Then
+
+* If Human error on the same task is 1%, we should focus on reducing bias since the training error is far from human error.
+* If Human error is 7.5%, we should focus on reducing variance, since the dev error is far from training error.
+
+Human level performance can be used as a proxy for Bayes error - the theoretical best performance of any model on this problem. 
+
+Andrew Ng uses the term _Avoidable Bias_ to refer to the difference between Human error and Model error. 
+
+## Understanding human-level performance
+
+Human-level error is used as a proxy for Bayes error, thus you should generally use the best possible selection of human-performance, not a random bloke off the street.
+
+## Improving the performance of your learning algorithm
+
+The 2 fundamental assumptions of supervised learning
+
+1. You can fit the training set pretty well (low avoidable bias)
+2. The training set performance generalizes pretty well to the dev/test set (low variance)
+
+
+
